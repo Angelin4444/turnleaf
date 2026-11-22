@@ -1,0 +1,219 @@
+/* CROSS-DOCUMENT VIEW TRANSITION OPT-IN
+   Why this rule is needed: by default, clicking a link between two separate
+   HTML documents is an instant page swap. This at-rule tells the browser that
+   navigations between same-origin pages should be animated. Because BOTH
+   index.html and book.html load this stylesheet, BOTH pages opt in (the
+   outgoing page and the incoming page must both allow it).
+   No JavaScript is required to start the transition. */
+@view-transition {
+  navigation: auto;
+}
+
+/* VIEW TRANSITION ANIMATION
+   While the transition runs the browser builds pseudo-elements:
+     ::view-transition-group(NAME)  moves and resizes between the old and new position
+     ::view-transition-old(NAME)    snapshot of the cover on the old page
+     ::view-transition-new(NAME)    live image of the cover on the new page
+   Each book's group is customised below (duration, easing, rounded corners).
+   object-fit: cover stops the snapshots from stretching while the size changes. */
+::view-transition-group(book-lantern),
+::view-transition-group(book-salt),
+::view-transition-group(book-arithmetic),
+::view-transition-group(book-cartographer),
+::view-transition-group(book-seasons) {
+  animation-duration: 0.7s;
+  animation-timing-function: cubic-bezier(0.22, 0.8, 0.24, 1);
+  border-radius: 4px 8px 8px 4px;
+  overflow: clip;
+}
+
+::view-transition-old(book-lantern),
+::view-transition-old(book-salt),
+::view-transition-old(book-arithmetic),
+::view-transition-old(book-cartographer),
+::view-transition-old(book-seasons),
+::view-transition-new(book-lantern),
+::view-transition-new(book-salt),
+::view-transition-new(book-arithmetic),
+::view-transition-new(book-cartographer),
+::view-transition-new(book-seasons) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Softer cross-fade for the rest of the page */
+::view-transition-old(root) { animation: 0.3s ease both turn-out; }
+::view-transition-new(root) { animation: 0.45s ease 0.1s both turn-in; }
+@keyframes turn-out { to   { opacity: 0; } }
+@keyframes turn-in  { from { opacity: 0; } }
+
+/* REDUCED MOTION ACCESSIBILITY
+   Users who ask their operating system to reduce motion get no animation:
+   navigation: none switches the transition off for this page. Links still work
+   normally, the page just changes instantly. Hover transitions are removed too. */
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+  html { scroll-behavior: auto !important; }
+  * { transition: none !important; }
+}
+
+/* ---------- 2. DESIGN TOKENS ---------- */
+:root {
+  --cream: #fbf6ec;
+  --ivory: #f5ecdc;
+  --beige: #eadcc4;
+  --ink: #33241f;
+  --ink-soft: #6b5850;
+  --burgundy: #7a1f3d;
+  --burgundy-dark: #5c1530;
+  --pink: #e3b9bf;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --radius: 10px;
+  --shadow: 0 18px 40px -18px rgba(74, 15, 36, 0.45), 0 4px 10px -4px rgba(51, 36, 31, 0.2);
+}
+
+/* ---------- 3. BASE ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--sans);
+  line-height: 1.65;
+  font-size: 1.0625rem;
+}
+img, svg { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.1; margin: 0 0 .5em; letter-spacing: -0.01em; }
+p { margin: 0 0 1em; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--burgundy); outline-offset: 3px; border-radius: 4px; }
+
+/* ---------- 4. HEADER & LOGO ---------- */
+.site-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.1rem clamp(1.25rem, 5vw, 4rem);
+  position: relative;
+}
+.logo { display: flex; align-items: center; gap: .6rem; text-decoration: none; }
+.logo-mark { width: 38px; height: 38px; }
+.logo-word { font-family: var(--serif); font-size: 1.7rem; font-weight: 600; letter-spacing: -0.02em; color: var(--ink); }
+.logo-word em { color: var(--burgundy); font-style: italic; font-weight: 500; }
+
+.main-nav { display: flex; align-items: center; gap: 2rem; }
+.main-nav a { text-decoration: none; font-size: .98rem; color: var(--ink-soft); padding: .25rem 0; border-bottom: 2px solid transparent; transition: color .2s, border-color .2s; }
+.main-nav a:hover, .main-nav a[aria-current="page"] { color: var(--burgundy); border-color: var(--pink); }
+.nav-search { display: flex; }
+
+.menu-toggle { display: none; background: none; border: 0; padding: .6rem; cursor: pointer; }
+.menu-toggle span { display: block; width: 24px; height: 2px; background: var(--ink); margin: 5px 0; transition: transform .25s, opacity .25s; }
+.menu-toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.menu-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.menu-toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ---------- 5. BUTTONS & SMALL PARTS ---------- */
+.btn {
+  display: inline-block; text-decoration: none;
+  background: var(--burgundy); color: var(--cream);
+  padding: .9rem 1.8rem; border-radius: 999px;
+  font-weight: 600; letter-spacing: .01em;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.btn:hover { background: var(--burgundy-dark); transform: translateY(-2px); }
+.chip {
+  display: inline-block; margin: 0 0 .6rem;
+  background: var(--pink); color: var(--burgundy-dark);
+  font-size: .8rem; font-weight: 600; padding: .2rem .75rem; border-radius: 999px;
+}
+.author { color: var(--ink-soft); font-style: italic; font-family: var(--serif); }
+.lead { font-family: var(--serif); font-size: 1.3rem; line-height: 1.5; color: var(--ink); }
+
+/* ---------- 6. BOOK COVERS ----------
+   Every cover is a 2:3 box. Put an <svg> OR an <img> inside it. */
+.cover {
+  display: block;
+  aspect-ratio: 2 / 3;
+  border-radius: 4px 8px 8px 4px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+.cover svg, .cover img { width: 100%; height: 100%; object-fit: cover; }
+/* spine highlight, like a real hardback */
+.cover::after {
+  content: ""; position: absolute; inset: 0 auto 0 0; width: 7%;
+  background: linear-gradient(90deg, rgba(0,0,0,.28), rgba(255,255,255,.1) 60%, transparent);
+  pointer-events: none;
+}
+
+/* ---------- 7. HOMEPAGE ---------- */
+.hero {
+  display: grid; grid-template-columns: 1.05fr 1fr; align-items: center; gap: clamp(2rem, 6vw, 5rem);
+  padding: clamp(2rem, 6vw, 5rem) clamp(1.25rem, 5vw, 4rem);
+  background: linear-gradient(180deg, var(--cream), var(--ivory));
+}
+.tagline { font-family: var(--serif); font-style: italic; color: var(--burgundy); margin-bottom: 1rem; }
+.hero h1 { font-size: clamp(2.8rem, 6vw, 5rem); max-width: 12ch; }
+.hero .lead { max-width: 30ch; margin-bottom: 2rem; color: var(--ink-soft); }
+
+.featured { display: grid; grid-template-columns: minmax(150px, 220px) 1fr; gap: 1.75rem; align-items: center; background: var(--beige); padding: 1.75rem; border-radius: 18px; }
+.featured .cover { transition: transform .3s; }
+.featured .cover:hover { transform: rotate(-1.5deg) translateY(-4px); }
+.featured-info h2 { font-size: 1.8rem; }
+.featured-info p:last-child { font-size: .98rem; color: var(--ink-soft); margin: 0; }
+
+.collection { padding: clamp(3rem, 7vw, 6rem) clamp(1.25rem, 5vw, 4rem); }
+.section-head { max-width: 40rem; margin-bottom: 2.5rem; }
+.section-head h2 { font-size: clamp(2rem, 4vw, 2.8rem); }
+.section-head p { color: var(--ink-soft); }
+.grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; }
+.card h3 { font-size: 1.25rem; margin-bottom: .15em; }
+.card h3 a, .featured-info h2 a { color: inherit; text-decoration: none; transition: color 0.2s ease; }
+.card h3 a:hover, .featured-info h2 a:hover { color: var(--burgundy); }
+.card .cover { margin-bottom: 1.1rem; transition: transform .3s; }
+.card:hover .cover { transform: translateY(-6px); }
+
+.about { background: var(--beige); text-align: center; padding: clamp(3rem, 7vw, 5rem) 1.5rem; }
+.about h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
+.about p { max-width: 38rem; margin: 0 auto; color: var(--ink-soft); }
+
+.site-footer { text-align: center; padding: 2rem 1rem; font-size: .9rem; color: var(--ink-soft); }
+.site-footer p { margin: 0; }
+
+/* ---------- 8. BOOK DETAIL PAGE ---------- */
+.detail { padding: 1rem clamp(1.25rem, 5vw, 4rem) clamp(3rem, 7vw, 6rem); max-width: 1200px; margin: 0 auto; }
+.back { display: inline-block; text-decoration: none; color: var(--burgundy); font-weight: 600; margin-bottom: 2rem; }
+.back:hover { text-decoration: underline; }
+.detail-grid { display: grid; grid-template-columns: minmax(240px, 400px) 1fr; gap: clamp(2rem, 6vw, 5rem); align-items: start; }
+.detail-info h1 { font-size: clamp(2.5rem, 5vw, 4rem); margin-bottom: .2em; }
+.detail-info .lead { margin-top: 1.5rem; }
+.meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem 1.5rem; margin: 2rem 0; padding: 1.5rem 0; border-block: 1px solid var(--beige); }
+.meta dt { font-size: .82rem; color: var(--ink-soft); }
+.meta dd { margin: 0; font-family: var(--serif); font-size: 1.1rem; }
+
+/* ---------- 9. RESPONSIVE ---------- */
+@media (max-width: 960px) {
+  .hero { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 720px) {
+  .menu-toggle { display: block; }
+  .main-nav {
+    display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 10;
+    flex-direction: column; align-items: flex-start; gap: 1rem;
+    background: var(--ivory); padding: 1.25rem; box-shadow: var(--shadow);
+  }
+  .main-nav.open { display: flex; }
+  .featured { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  .featured .cover { width: 200px; }
+  .detail-grid { grid-template-columns: 1fr; justify-items: center; }
+  .detail-grid .cover { width: min(300px, 80%); }
+  .detail-info { justify-self: stretch; }
+  .meta { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 460px) {
+  .grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .card h3 { font-size: 1.05rem; }
+}
